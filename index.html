@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Kanji Step - 日本語学習</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e1e2f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/icon-192.jpg">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s;
+    }
+
+    /* ダークモード (デフォルト) */
+    body.dark {
+      --bg: #121212;
+      --surface: #1e1e2a;
+      --card: #2a2a36;
+      --text: #f0f0f0;
+      --text-secondary: #b0b0c0;
+      --border: #3a3a48;
+      --accent: #7c4dff;
+      --accent-hover: #966eff;
+      --button-bg: #2d2d3a;
+      --footer-bg: #1a1a24;
+    }
+
+    /* クリアモード (ライト) */
+    body.light {
+      --bg: #f8f9fc;
+      --surface: #ffffff;
+      --card: #ffffff;
+      --text: #1e1e2a;
+      --text-secondary: #4a4a5a;
+      --border: #dddde6;
+      --accent: #5e3bdd;
+      --accent-hover: #7c4dff;
+      --button-bg: #efeff4;
+      --footer-bg: #eef0f5;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .app-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), #b47cff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .controls {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+    button, .lang-btn {
+      background: var(--button-bg);
+      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover, .lang-btn:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .active-lang {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .part-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.8rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+    .part-card {
+      background: var(--card);
+      border-radius: 2rem;
+      padding: 2rem 1.8rem;
+      width: 200px;
+      text-align: center;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .part-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+      border-color: var(--accent);
+    }
+    .part-icon {
+      font-size: 3.5rem;
+      margin-bottom: 0.8rem;
+    }
+    .part-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    .part-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .back-bar {
+      margin-bottom: 1.5rem;
+    }
+    .back-btn {
+      background: var(--button-bg);
+      border: none;
+      padding: 0.5rem 1.2rem;
+      font-size: 1rem;
+      border-radius: 2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .words-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+    .word-card {
+      background: var(--card);
+      border-radius: 1.5rem;
+      padding: 1.2rem;
+      border: 1px solid var(--border);
+      transition: 0.1s;
+    }
+    .word-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+    .kanji-area {
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .reading {
+      font-size: 1rem;
+      color: var(--accent);
+      background: rgba(124,77,255,0.15);
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 2rem;
+    }
+    .meaning {
+      margin: 0.8rem 0;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .example {
+      background: var(--surface);
+      padding: 0.7rem;
+      border-radius: 1rem;
+      margin: 0.8rem 0;
+      font-style: italic;
+      border-left: 3px solid var(--accent);
+    }
+    .example-sub {
+      margin-top: 0.4rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      border-top: 1px dashed var(--border);
+      padding-top: 0.4rem;
+    }
+    .audio-buttons {
+      display: flex;
+      gap: 0.8rem;
+      margin: 0.8rem 0 0.5rem;
+    }
+    .audio-btn {
+      background: var(--button-bg);
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .illustration-placeholder {
+      margin-top: 0.8rem;
+      background: var(--surface);
+      border-radius: 1rem;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      border: 1px dashed var(--border);
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 0.5rem;
+    }
+    .illustration-placeholder img {
+      max-width: 100%;
+      max-height: 70px;
+      object-fit: contain;
+    }
+    .footer {
+      margin-top: 4rem;
+      text-align: center;
+      padding: 2rem 1rem;
+      background: var(--footer-bg);
+      border-radius: 2rem 2rem 0 0;
+      font-size: 0.85rem;
+    }
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .hidden {
+      display: none;
+    }
+    @media (max-width: 640px) {
+      .words-grid { grid-template-columns: 1fr; }
+      .part-card { width: 160px; padding: 1.2rem; }
+    }
+  </style>
+</head>
+<body class="dark">
+  <div class="container" id="app">
+    <header class="app-header">
+      <div class="logo"><h1 id="appTitle">📖 漢字ステップ</h1></div>
+      <div class="controls">
+        <div id="langGroup">
+          <button data-lang="en" class="lang-btn active-lang">🇬🇧 English</button>
+          <button data-lang="zh" class="lang-btn">🇨🇳 中文</button>
+          <button data-lang="ja" class="lang-btn">🇯🇵 日本語</button>
+        </div>
+        <button id="themeToggle">🌙 Dark mode</button>
+      </div>
+    </header>
+
+    <main id="mainView">
+      <div class="part-grid" id="partsGrid"></div>
+    </main>
+
+    <main id="detailView" class="hidden">
+      <div class="back-bar">
+        <button class="back-btn" id="backToMain">← Back</button>
+      </div>
+      <h2 id="detailTitle"></h2>
+      <div id="wordsContainer" class="words-grid"></div>
+    </main>
+
+    <footer class="footer">
+      Contact us<br>
+      <a href="mailto:mementomorikatsu@gmail.com">mementomorikatsu@gmail.com</a>
+    </footer>
+  </div>
+
+  <script>
+    // --------------------------------------------------------------
+    // 漢字データ (名詞20 / 動詞15 / 形容詞10 / 副詞5)
+    // --------------------------------------------------------------
+    const VOCAB_DATA = {
+      nouns: [
+        { kanji: "人", kana: "ひと", meanings: { en: "person", zh: "人", ja: "人" }, examples: { en: "That person is a teacher.", zh: "那个人是老师。", ja: "あの人は先生です。" } },
+        { kanji: "日", kana: "ひ／にち", meanings: { en: "day / sun", zh: "日子 / 太阳", ja: "日 / 太陽" }, examples: { en: "Today is a nice day.", zh: "今天是个好日子。", ja: "今日はいい日です。" } },
+        { kanji: "月", kana: "つき／がつ", meanings: { en: "moon / month", zh: "月亮 / 月", ja: "月" }, examples: { en: "The moon is beautiful.", zh: "月亮很美。", ja: "月がきれいです。" } },
+        { kanji: "山", kana: "やま", meanings: { en: "mountain", zh: "山", ja: "山" }, examples: { en: "Mt. Fuji is tall.", zh: "富士山很高。", ja: "富士山は高いです。" } },
+        { kanji: "川", kana: "かわ", meanings: { en: "river", zh: "河", ja: "川" }, examples: { en: "This river is clean.", zh: "这条河很干净。", ja: "この川はきれいです。" } },
+        { kanji: "雨", kana: "あめ", meanings: { en: "rain", zh: "雨", ja: "雨" }, examples: { en: "It's raining.", zh: "下雨了。", ja: "雨が降っています。" } },
+        { kanji: "火", kana: "ひ", meanings: { en: "fire", zh: "火", ja: "火" }, examples: { en: "Please don't light a fire.", zh: "请不要点火。", ja: "火を付けないでください。" } },
+        { kanji: "水", kana: "みず", meanings: { en: "water", zh: "水", ja: "水" }, examples: { en: "Drink water.", zh: "喝水。", ja: "水を飲みます。" } },
+        { kanji: "木", kana: "き", meanings: { en: "tree", zh: "树", ja: "木" }, examples: { en: "There is a tree in the garden.", zh: "院子里有棵树。", ja: "庭に木があります。" } },
+        { kanji: "犬", kana: "いぬ", meanings: { en: "dog", zh: "狗", ja: "犬" }, examples: { en: "I like dogs.", zh: "我喜欢狗。", ja: "犬が好きです。" } },
+        { kanji: "猫", kana: "ねこ", meanings: { en: "cat", zh: "猫", ja: "猫" }, examples: { en: "Cats are cute.", zh: "猫很可爱。", ja: "猫はかわいいです。" } },
+        { kanji: "車", kana: "くるま", meanings: { en: "car", zh: "车", ja: "車" }, examples: { en: "I bought a new car.", zh: "我买了新车。", ja: "新しい車を買いました。" } },
+        { kanji: "学校", kana: "がっこう", meanings: { en: "school", zh: "学校", ja: "学校" }, examples: { en: "Go to school.", zh: "去学校。", ja: "学校に行きます。" } },
+        { kanji: "先生", kana: "せんせい", meanings: { en: "teacher", zh: "老师", ja: "先生" }, examples: { en: "The teacher is kind.", zh: "老师很亲切。", ja: "先生は親切です。" } },
+        { kanji: "子供", kana: "こども", meanings: { en: "child", zh: "孩子", ja: "子供" }, examples: { en: "Children are playing.", zh: "孩子们在玩耍。", ja: "子供が遊んでいます。" } },
+        { kanji: "友達", kana: "ともだち", meanings: { en: "friend", zh: "朋友", ja: "友達" }, examples: { en: "My friend is Japanese.", zh: "我的朋友是日本人。", ja: "私の友達は日本人です。" } },
+        { kanji: "家", kana: "いえ／うち", meanings: { en: "house / home", zh: "家", ja: "家" }, examples: { en: "Go home.", zh: "回家。", ja: "家に帰ります。" } },
+        { kanji: "店", kana: "みせ", meanings: { en: "shop", zh: "店铺", ja: "店" }, examples: { en: "This shop is cheap.", zh: "这家店很便宜。", ja: "この店は安いです。" } },
+        { kanji: "食べ物", kana: "たべもの", meanings: { en: "food", zh: "食物", ja: "食べ物" }, examples: { en: "Give me food, please.", zh: "请给我食物。", ja: "食べ物をください。" } },
+        { kanji: "時間", kana: "じかん", meanings: { en: "time", zh: "时间", ja: "時間" }, examples: { en: "I have no time.", zh: "我没有时间。", ja: "時間がありません。" } }
+      ],
+      verbs: [
+        { kanji: "行く", kana: "いく", meanings: { en: "go", zh: "去", ja: "行く" }, examples: { en: "I go to school.", zh: "我去学校。", ja: "学校に行きます。" } },
+        { kanji: "来る", kana: "くる", meanings: { en: "come", zh: "来", ja: "来る" }, examples: { en: "My friend comes.", zh: "朋友来了。", ja: "友達が来ます。" } },
+        { kanji: "見る", kana: "みる", meanings: { en: "see / watch", zh: "看", ja: "見る" }, examples: { en: "I watch TV.", zh: "我看电视。", ja: "テレビを見ます。" } },
+        { kanji: "食べる", kana: "たべる", meanings: { en: "eat", zh: "吃", ja: "食べる" }, examples: { en: "I eat breakfast.", zh: "我吃早饭。", ja: "朝ごはんを食べます。" } },
+        { kanji: "飲む", kana: "のむ", meanings: { en: "drink", zh: "喝", ja: "飲む" }, examples: { en: "I drink water.", zh: "我喝水。", ja: "水を飲みます。" } },
+        { kanji: "聞く", kana: "きく", meanings: { en: "listen / ask", zh: "听", ja: "聞く" }, examples: { en: "I listen to music.", zh: "我听音乐。", ja: "音楽を聞きます。" } },
+        { kanji: "話す", kana: "はなす", meanings: { en: "speak", zh: "说", ja: "話す" }, examples: { en: "I speak Japanese.", zh: "我说日语。", ja: "日本語を話します。" } },
+        { kanji: "読む", kana: "よむ", meanings: { en: "read", zh: "读", ja: "読む" }, examples: { en: "I read the newspaper.", zh: "我读报纸。", ja: "新聞を読みます。" } },
+        { kanji: "書く", kana: "かく", meanings: { en: "write", zh: "写", ja: "書く" }, examples: { en: "I write a letter.", zh: "我写信。", ja: "手紙を書きます。" } },
+        { kanji: "買う", kana: "かう", meanings: { en: "buy", zh: "买", ja: "買う" }, examples: { en: "I buy fruit at the supermarket.", zh: "我在超市买水果。", ja: "スーパーで果物を買います。" } },
+        { kanji: "寝る", kana: "ねる", meanings: { en: "sleep", zh: "睡觉", ja: "寝る" }, examples: { en: "I sleep early.", zh: "我早睡。", ja: "早く寝ます。" } },
+        { kanji: "起きる", kana: "おきる", meanings: { en: "wake up", zh: "起床", ja: "起きる" }, examples: { en: "I wake up at 6 a.m.", zh: "我早上六点起床。", ja: "朝6時に起きます。" } },
+        { kanji: "する", kana: "する", meanings: { en: "do", zh: "做", ja: "する" }, examples: { en: "I study.", zh: "我学习。", ja: "勉強をします。" } },
+        { kanji: "ある", kana: "ある", meanings: { en: "exist (inanimate)", zh: "有（物体）", ja: "ある" }, examples: { en: "There is a book on the desk.", zh: "桌子上有本书。", ja: "机の上に本があります。" } },
+        { kanji: "いる", kana: "いる", meanings: { en: "exist (animate)", zh: "有（生物）", ja: "いる" }, examples: { en: "There are children in the park.", zh: "公园里有孩子。", ja: "公園に子供がいます。" } }
+      ],
+      adjectives: [
+        { kanji: "大きい", kana: "おおきい", meanings: { en: "big", zh: "大", ja: "大きい" }, examples: { en: "A big dog.", zh: "大狗。", ja: "大きい犬です。" } },
+        { kanji: "小さい", kana: "ちいさい", meanings: { en: "small", zh: "小", ja: "小さい" }, examples: { en: "A small cat.", zh: "小猫。", ja: "小さい猫です。" } },
+        { kanji: "新しい", kana: "あたらしい", meanings: { en: "new", zh: "新", ja: "新しい" }, examples: { en: "A new smartphone.", zh: "新手机。", ja: "新しいスマホです。" } },
+        { kanji: "古い", kana: "ふるい", meanings: { en: "old", zh: "旧", ja: "古い" }, examples: { en: "An old book.", zh: "旧书。", ja: "古い本です。" } },
+        { kanji: "高い", kana: "たかい", meanings: { en: "high / expensive", zh: "高", ja: "高い" }, examples: { en: "This building is tall.", zh: "这栋楼很高。", ja: "このビルは高いです。" } },
+        { kanji: "安い", kana: "やすい", meanings: { en: "cheap", zh: "便宜", ja: "安い" }, examples: { en: "This apple is cheap.", zh: "这个苹果便宜。", ja: "このりんごは安いです。" } },
+        { kanji: "熱い", kana: "あつい", meanings: { en: "hot (to touch)", zh: "热", ja: "熱い" }, examples: { en: "The tea is hot.", zh: "茶很热。", ja: "お茶が熱いです。" } },
+        { kanji: "楽しい", kana: "たのしい", meanings: { en: "fun", zh: "愉快", ja: "楽しい" }, examples: { en: "The party is fun.", zh: "派对很有趣。", ja: "パーティーは楽しいです。" } },
+        { kanji: "美味しい", kana: "おいしい", meanings: { en: "delicious", zh: "好吃", ja: "美味しい" }, examples: { en: "This dish is delicious.", zh: "这道菜很好吃。", ja: "この料理は美味しいです。" } },
+        { kanji: "難しい", kana: "むずかしい", meanings: { en: "difficult", zh: "难", ja: "難しい" }, examples: { en: "Kanji is difficult.", zh: "汉字很难。", ja: "漢字は難しいです。" } }
+      ],
+      adverbs: [
+        { kanji: "沢山", kana: "たくさん", meanings: { en: "many / a lot", zh: "很多", ja: "沢山" }, examples: { en: "I ate a lot.", zh: "我吃了很多。", ja: "沢山食べました。" } },
+        { kanji: "一番", kana: "いちばん", meanings: { en: "the most", zh: "最", ja: "一番" }, examples: { en: "My favorite color is red.", zh: "我最喜欢的颜色是红色。", ja: "一番好きな色は赤です。" } },
+        { kanji: "必ず", kana: "かならず", meanings: { en: "certainly / without fail", zh: "一定", ja: "必ず" }, examples: { en: "Please be sure to come.", zh: "请一定来。", ja: "必ず来てください。" } },
+        { kanji: "大変", kana: "たいへん", meanings: { en: "very / tough", zh: "非常", ja: "大変" }, examples: { en: "I am very tired.", zh: "我非常累。", ja: "大変疲れました。" } },
+        { kanji: "時々", kana: "ときどき", meanings: { en: "sometimes", zh: "有时", ja: "時々" }, examples: { en: "I sometimes watch movies.", zh: "我有时看电影。", ja: "時々映画を見ます。" } }
+      ]
+    };
+
+    let currentLang = "en";
+    let currentView = "main";
+    let currentPart = null;
+
+    const mainViewDiv = document.getElementById("mainView");
+    const detailViewDiv = document.getElementById("detailView");
+    const partsGrid = document.getElementById("partsGrid");
+    const detailTitle = document.getElementById("detailTitle");
+    const wordsContainer = document.getElementById("wordsContainer");
+    const backBtn = document.getElementById("backToMain");
+    const themeToggle = document.getElementById("themeToggle");
+    const appTitle = document.getElementById("appTitle");
+
+    const titles = { en: "📖 Kanji Step", zh: "📖 汉字阶梯", ja: "📖 漢字ステップ" };
+
+    function getMeaning(item) {
+      return item.meanings[currentLang] || item.meanings.en;
+    }
+
+    // 例文表示用: 現在の言語に応じて、日本語＋対象言語 or 日本語のみ
+    function getExampleDisplay(item) {
+      const jpExample = item.examples.ja;
+      if (currentLang === 'ja') {
+        return { main: jpExample, sub: null };
+      } else {
+        const targetExample = item.examples[currentLang] || item.examples.en;
+        return { main: jpExample, sub: targetExample };
+      }
+    }
+
+    // 音声連続再生 (キャンセル後、順次再生)
+    let currentUtterance = null;
+    function speakSequence(texts, langCodes) {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      if (!texts.length) return;
+      let index = 0;
+      function speakNext() {
+        if (index >= texts.length) return;
+        const utterance = new SpeechSynthesisUtterance(texts[index]);
+        utterance.lang = langCodes[index];
+        utterance.rate = 0.9;
+        utterance.onend = () => {
+          index++;
+          speakNext();
+        };
+        utterance.onerror = () => {
+          index++;
+          speakNext();
+        };
+        currentUtterance = utterance;
+        window.speechSynthesis.speak(utterance);
+      }
+      speakNext();
+    }
+
+    // 例文音声: 日本語モードなら日本語のみ、他言語なら日本語→訳文
+    function playExampleAudio(item) {
+      const jpExample = item.examples.ja;
+      if (currentLang === 'ja') {
+        speakSequence([jpExample], ['ja-JP']);
+      } else {
+        const targetExample = item.examples[currentLang] || item.examples.en;
+        const targetLangCode = currentLang === 'en' ? 'en-US' : 'zh-CN';
+        speakSequence([jpExample, targetExample], ['ja-JP', targetLangCode]);
+      }
+    }
+
+    function renderMain() {
+      const parts = [
+        { id: "nouns", name: { en: "Nouns", zh: "名词", ja: "名詞" }, icon: "📚", desc: { en: "People, places, things", zh: "人、地点、事物", ja: "人・場所・もの" } },
+        { id: "verbs", name: { en: "Verbs", zh: "动词", ja: "動詞" }, icon: "⚡", desc: { en: "Actions & states", zh: "动作与状态", ja: "動作・状態" } },
+        { id: "adjectives", name: { en: "Adjectives", zh: "形容词", ja: "形容詞" }, icon: "🎨", desc: { en: "Describe things", zh: "描述事物", ja: "性質・状態" } },
+        { id: "adverbs", name: { en: "Adverbs", zh: "副词", ja: "副詞" }, icon: "✨", desc: { en: "Modify verbs/adjectives", zh: "修饰动词/形容词", ja: "動詞・形容詞を修飾" } }
+      ];
+      partsGrid.innerHTML = parts.map(part => `
+        <div class="part-card" data-part="${part.id}">
+          <div class="part-icon">${part.icon}</div>
+          <div class="part-title">${part.name[currentLang]}</div>
+          <div class="part-desc">${part.desc[currentLang]}</div>
+        </div>
+      `).join('');
+      document.querySelectorAll('.part-card').forEach(card => {
+        card.addEventListener('click', () => showDetailView(card.dataset.part));
+      });
+    }
+
+    function showDetailView(partId) {
+      currentPart = partId;
+      let dataArray, titleKey;
+      if (partId === "nouns") { dataArray = VOCAB_DATA.nouns; titleKey = "名詞"; }
+      else if (partId === "verbs") { dataArray = VOCAB_DATA.verbs; titleKey = "動詞"; }
+      else if (partId === "adjectives") { dataArray = VOCAB_DATA.adjectives; titleKey = "形容詞"; }
+      else { dataArray = VOCAB_DATA.adverbs; titleKey = "副詞"; }
+      
+      const titleMap = { en: titleKey === "名詞" ? "Nouns" : titleKey === "動詞" ? "Verbs" : titleKey === "形容詞" ? "Adjectives" : "Adverbs", zh: titleKey, ja: titleKey };
+      detailTitle.innerText = titleMap[currentLang];
+      
+      wordsContainer.innerHTML = dataArray.map((item, idx) => {
+        const meaning = getMeaning(item);
+        const { main: exampleMain, sub: exampleSub } = getExampleDisplay(item);
+        const imageId = `img_${partId}_${idx}`;
+        const subHtml = exampleSub ? `<div class="example-sub">🌐 ${exampleSub}</div>` : '';
+        return `
+          <div class="word-card" data-word-idx="${idx}">
+            <div class="word-header">
+              <div class="kanji-area">${item.kanji}</div>
+              <div class="reading">${item.kana}</div>
+            </div>
+            <div class="meaning">📖 ${meaning}</div>
+            <div class="example">💬 ${exampleMain}${subHtml}</div>
+            <div class="audio-buttons">
+              <button class="audio-btn kanji-audio" data-kana="${item.kana}">🔊 漢字</button>
+              <button class="audio-btn example-audio" data-item-idx="${idx}" data-part="${partId}">🎧 例文</button>
+            </div>
+            <div class="illustration-placeholder" id="${imageId}">
+              🖼️ イラスト追加予定 (後から画像可)
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      document.querySelectorAll('.kanji-audio').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const kana = btn.dataset.kana;
+          if (kana) speakSequence([kana], ['ja-JP']);
+        });
+      });
+      document.querySelectorAll('.example-audio').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const part = btn.dataset.part;
+          const idx = parseInt(btn.dataset.itemIdx);
+          let item = null;
+          if (part === "nouns") item = VOCAB_DATA.nouns[idx];
+          else if (part === "verbs") item = VOCAB_DATA.verbs[idx];
+          else if (part === "adjectives") item = VOCAB_DATA.adjectives[idx];
+          else if (part === "adverbs") item = VOCAB_DATA.adverbs[idx];
+          if (item) playExampleAudio(item);
+        });
+      });
+      
+      mainViewDiv.classList.add("hidden");
+      detailViewDiv.classList.remove("hidden");
+      currentView = "detail";
+    }
+
+    function backToMain() {
+      mainViewDiv.classList.remove("hidden");
+      detailViewDiv.classList.add("hidden");
+      currentView = "main";
+      currentPart = null;
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      appTitle.innerText = titles[lang];
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        if (btn.dataset.lang === lang) btn.classList.add('active-lang');
+        else btn.classList.remove('active-lang');
+      });
+      if (currentView === "main") {
+        renderMain();
+      } else if (currentView === "detail" && currentPart) {
+        showDetailView(currentPart);
+      }
+    }
+
+    function initTheme() {
+      const isDark = localStorage.getItem('theme') !== 'light';
+      document.body.classList.toggle('dark', isDark);
+      document.body.classList.toggle('light', !isDark);
+      themeToggle.innerText = isDark ? '☀️ Clear mode' : '🌙 Dark mode';
+    }
+    function toggleTheme() {
+      const isDark = document.body.classList.contains('dark');
+      if (isDark) {
+        document.body.classList.remove('dark');
+        document.body.classList.add('light');
+        localStorage.setItem('theme', 'light');
+        themeToggle.innerText = '🌙 Dark mode';
+      } else {
+        document.body.classList.remove('light');
+        document.body.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        themeToggle.innerText = '☀️ Clear mode';
+      }
+    }
+
+    document.getElementById("langGroup").addEventListener('click', (e) => {
+      const langBtn = e.target.closest('.lang-btn');
+      if (langBtn && langBtn.dataset.lang) setLanguage(langBtn.dataset.lang);
+    });
+    backBtn.addEventListener('click', backToMain);
+    themeToggle.addEventListener('click', toggleTheme);
+    
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered:', reg)).catch(err => console.log('SW failed:', err));
+    }
+    
+    initTheme();
+    setLanguage('en');
+    renderMain();
+  </script>
+</body>
+</html>

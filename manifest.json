@@ -1,0 +1,24 @@
+{
+  "name": "漢字ステップ - 日本語学習",
+  "short_name": "KanjiStep",
+  "start_url": "index.html",
+  "display": "standalone",
+  "theme_color": "#1e1e2f",
+  "background_color": "#121212",
+  "icons": [
+    {
+      "src": "icons/icon-192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "lang": "en",
+  "orientation": "portrait"
+}
